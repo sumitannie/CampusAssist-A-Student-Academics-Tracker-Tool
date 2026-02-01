@@ -56,7 +56,7 @@ This project focuses on **clarity, simplicity, and real classroom usability**, r
 ---
 
 ## 📂 Project Structure
-
+```bash
 student_progress/
 │
 ├── app.py # Flask backend
@@ -78,7 +78,6 @@ student_progress/
 ## ▶️ How to Run the Project
 
 ### 1️⃣ Create Virtual Environment
-```bash
 python -m venv venv
 Activate it:
 
