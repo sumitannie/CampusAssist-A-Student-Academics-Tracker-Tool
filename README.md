@@ -73,7 +73,7 @@ student_progress/
 │ └── style.css # Application styling
 │
 └── README.md
-
+```
 
 ## ▶️ How to Run the Project
 
