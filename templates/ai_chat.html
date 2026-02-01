@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CampusAssist AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+  <style>
+    .chat-box {
+      height: 350px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 8px;
+      background: #f9f9f9;
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .user-msg {
+      background: #e3f2fd;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .ai-msg {
+      background: #f1f8e9;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🤖 CampusAssist AI</h1>
+  <p class="subtitle">AI Teaching Assistant for Academic Support</p>
+
+  <div class="chat-box">
+    <div class="ai-msg">
+      Hello! I am <strong>CampusAssist AI</strong>.<br>
+      Ask me about teaching strategies, student performance, or academic guidance.
+    </div>
+
+    {% if user_message %}
+      <div class="user-msg">
+        <strong>You:</strong> {{ user_message }}
+      </div>
+
+      <div class="ai-msg">
+        <strong>CampusAssist AI:</strong> {{ ai_response }}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Chat Input -->
+  <form method="POST" class="chat-input">
+    <input type="text" name="message" placeholder="Ask CampusAssist AI..." required>
+    <button type="submit" class="btn">Send</button>
+  </form>
+
+  <br>
+
+  <a href="{{ url_for('home') }}" class="btn secondary">
+    ⬅ Back to Dashboard
+  </a>
+</div>
+
+</body>
+</html>

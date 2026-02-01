@@ -1,6 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for
 import json
+from google import genai
+from dotenv import load_dotenv
 import os
+import re
+
+load_dotenv()
+
+api_key = os.getenv("GEMINI_API_KEY")
+
+print("DEBUG → API KEY LOADED =", api_key)
+
+client = genai.Client(api_key=api_key)
 
 app = Flask(__name__)
 
@@ -81,7 +92,6 @@ def students_list():
     # Unique class list
     classes = sorted(set(s["class"] for s in students))
 
-    # 🔍 If teacher searched by NAME → ignore class
     if search_name:
         search_name = search_name.lower()
         students = [
@@ -113,6 +123,85 @@ def view_report(student_id):
     students = load_students()
     student = next((s for s in students if s["id"] == student_id), None)
     return render_template("report.html", student=student)
+
+
+@app.route("/ai", methods=["GET", "POST"])
+def ai_chat():
+    user_message = None
+    ai_response = None
+
+    if request.method == "POST":
+        user_message = request.form["message"]
+
+        prompt = f"""
+You are CampusAssist AI, a helpful assistant for school teachers.
+
+STYLE RULES:
+- Use a warm, encouraging tone
+- Start with ONE short friendly introduction sentence (max 15 words)
+- Then provide bullet points
+- Each bullet point must be on a new line
+- Use '-' as bullet symbol
+- Maximum 5 bullet points
+- Keep each bullet point short and clear
+- End with ONE short encouraging closing sentence (max 12 words)
+- Do NOT write long paragraphs
+
+FORMAT EXAMPLE (follow exactly):
+Intro sentence.
+
+- Bullet point one
+- Bullet point two
+- Bullet point three
+
+Closing sentence.
+
+Teacher question:
+{user_message}
+"""
+
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=[{
+                    "role": "user",
+                    "parts": [{"text": prompt}]
+                }]
+            )
+
+            raw = response.candidates[0].content.parts[0].text.strip()
+
+            # POST-PROCESSING ->
+
+            raw = response.candidates[0].content.parts[0].text.strip()
+
+            # Normalize bullet symbols
+            raw = raw.replace("•", "-").replace("*", "-")
+           
+            raw = raw.replace(". -", ".\n-")
+            
+            # 🔒 Split ONLY on bullets that start a point
+            points = re.split(r"\s*-\s+", raw)
+
+            clean_bullets = []
+            for p in points:
+                p = p.strip()
+                if p:
+                    clean_bullets.append(f"- {p.rstrip('.')}")
+
+            ai_response = "\n".join(clean_bullets[:6])
+
+        except Exception as e:
+            print("AI ERROR:", e)
+            ai_response = "- AI service is temporarily unavailable\n- Please try again later"
+
+    return render_template(
+        "ai_chat.html",
+        user_message=user_message,
+        ai_response=ai_response
+    )
+
+
 
 
 if __name__ == "__main__":
